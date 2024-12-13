@@ -1,11 +1,4 @@
-import {
-  Image,
-  StyleSheet,
-  TextInput,
-  FlatList,
-  View,
-  Animated,
-} from "react-native";
+import { StyleSheet, TextInput, FlatList, View, Animated } from "react-native";
 import { useState, useRef } from "react";
 import { ThemedText } from "@/components/ThemedText";
 import { vocabs, vocabType } from "@/assets/data";
@@ -38,7 +31,7 @@ export default function HomeScreen() {
         <RotateLogo/>
         </View>
         <View style={styles.titleContainer}>
-          <ThemedText style={styles.titleText}>Hello Shan Ni</ThemedText>
+          <ThemedText style={styles.titleText}>ꩫမ်ႍၷႂၫမ်းတႆးꩫꧥင်း</ThemedText>
           <ThemedView style={styles.searchContainer}>
             <TextInput
               style={[

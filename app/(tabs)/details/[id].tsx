@@ -1,5 +1,6 @@
 import { booksList } from "@/assets/data/books";
 import About from "@/components/About";
+import RotateLogo from "@/components/RotateLogo";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { useLocalSearchParams } from "expo-router";
@@ -16,11 +17,8 @@ export default function DetailsScreen() {
         <View>
           <ThemedView style={styles.headerContainer}>
             {/* Header Image */}
-            <View>
-              <Image
-                source={require("@/assets/images/icon.png")}
-                style={styles.reactLogo}
-              />
+            <View style={{ width: 120, height: 120 }}>
+              <RotateLogo />
             </View>
             {/* Title and Search */}
             <View style={styles.titleContainer}>
@@ -68,7 +66,7 @@ const styles = StyleSheet.create({
     paddingBottom: 2,
     borderBottomWidth: 0.5,
     // borderBottomColor: "#DDD",
-    marginTop: -8,
+    marginTop: 0,
   },
   titleText: {
     fontSize: 17,

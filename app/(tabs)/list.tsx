@@ -70,7 +70,7 @@ const Books = () => {
         <RotateLogo/>
         </View>
         <View style={styles.titleContainer}>
-          <ThemedText style={styles.titleText}>Hello Shan Ni</ThemedText>
+          <ThemedText style={styles.titleText}>ꩫမ်ႍၷႂၫမ်းတႆးꩫꧥင်း</ThemedText>
           <ThemedView style={styles.searchContainer}>
             <TextInput
               style={[

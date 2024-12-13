@@ -32,6 +32,12 @@
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"
         }
+      ],
+      [
+        "expo-font",
+        {
+          "ShanNi01": ["./assets/fonts/ShanNi01 & English.ttf"]
+        }
       ]
     ],
     "experiments": {
