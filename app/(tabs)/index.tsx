@@ -1,74 +1,154 @@
-import { Image, StyleSheet, Platform } from 'react-native';
-
-import { HelloWave } from '@/components/HelloWave';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
+import {
+  Image,
+  StyleSheet,
+  TextInput,
+  FlatList,
+  View,
+  Animated,
+} from "react-native";
+import { useState, useRef } from "react";
+import { ThemedText } from "@/components/ThemedText";
+import { vocabs, vocabType } from "@/assets/data";
+import Item from "@/components/ui/Item";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { ThemedView } from "@/components/ThemedView";
+import { useColorScheme } from "@/hooks/useColorScheme.web";
+import NotFoundItem from "@/components/ui/NotFoundItem";
+import RotateLogo from "@/components/RotateLogo";
 
 export default function HomeScreen() {
+  const theme = useColorScheme() ?? "light";
+  const [items, setItems] = useState<vocabType[]>(vocabs);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  // Filter items based on the search query
+
+  const filteredItems = items.filter((item: vocabType) =>
+    item.tai.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    item.myan.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    item.eng.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    item.description.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+  const renderItem = (item:vocabType) => <AnimatedItem item={item} />;
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
+    <SafeAreaView style={styles.container}>
+      <ThemedView style={styles.headerContainer}>
+      <View style={{width:120, height:120}}>
+        <RotateLogo/>
+        </View>
+        <View style={styles.titleContainer}>
+          <ThemedText style={styles.titleText}>Hello Shan Ni</ThemedText>
+          <ThemedView style={styles.searchContainer}>
+            <TextInput
+              style={[
+                styles.search,
+                { backgroundColor: theme && "gray" || "black" },
+              ]}
+              placeholder={`🔎 ${items.length} vocabs`}
+              value={searchQuery}
+              onChangeText={(text) => setSearchQuery(text)}
+            />
+          </ThemedView>
+        </View>
       </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12'
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-        <ThemedText>
-          Tap the Explore tab to learn more about what's included in this starter app.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          When you're ready, run{' '}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+      {filteredItems.length>0&&<FlatList
+      style={styles.itemContainer}
+        data={filteredItems} // Data for the list
+        keyExtractor={(item) => item.id.toString()} // Use item.id as the key
+        renderItem={({ item }: { item: vocabType }) => (
+          <AnimatedItem item={item} /> // Render the AnimatedItem
+        )}
+        numColumns={3} // Two columns
+        columnWrapperStyle={styles.columnWrapper} // Adjust spacing between columns
+      /> || <NotFoundItem/>}
+    </SafeAreaView>
   );
 }
 
+function AnimatedItem({ item }: { item: vocabType }) {
+  const opacity = useRef(new Animated.Value(0)).current;
+
+  Animated.timing(opacity, {
+    toValue: 1,
+    duration: 900,
+    useNativeDriver: true,
+  }).start();
+
+  return (
+    <Animated.View style={[styles.itemContainer, { opacity }]}>
+      <Item
+        id={item.id}
+        tai={item.tai}
+        myan={item.myan}
+        eng={item.eng}
+        description={item.description}
+        isArchived={item.isArchived}
+        created_at={item.created_at}
+        updated_at={item.updated_at}
+        authorId={item.authorId}
+      />
+    </Animated.View>
+  );
+}
+
+
 const styles = StyleSheet.create({
+  container: {
+    width: "100%",
+    height: "auto",
+    marginHorizontal: "auto",
+    justifyContent: "center",
+  },
+  itemsContainer: {
+    width: "100%",
+    marginHorizontal: "auto",
+  },
+  headerContainer: {
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 5,
+    borderBottomEndRadius: 10,
+    borderBottomStartRadius: 10,
+    borderBottomColor: "gray",
+    borderWidth: 0.2,
+  },
+
   titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
+    paddingHorizontal: 10,
+    paddingBottom: 2,
+    borderBottomWidth: 0.5,
+    marginTop: 0,
   },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
+  titleText: {
+    fontSize: 14,
+    textAlign: "center",
+    marginBottom: 1,
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
+  searchContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 2,
+    borderRadius: 8,
+    borderWidth: 0.5,
+    borderColor: "#CCC",
+    width: 220,
+    height: 50,
+    marginHorizontal: "auto",
+  },
+  search: {
+    flex: 1,
+    padding: 5,
+    fontSize: 16,
+    height: "100%",
+    borderRadius: 5,
+  },
+  itemContainer: {
+    marginBottom: 10, // Add spacing between items
+  },
+  columnWrapper: {
+    justifyContent: "space-between", // Space items evenly in a row
+    marginBottom: 10,
+    flexWrap:'wrap'
   },
 });
