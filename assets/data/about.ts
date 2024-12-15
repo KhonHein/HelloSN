@@ -62,3 +62,18 @@ export const about4 = [
         describion:'Make your shan ni strong and grate again.',
     },
 ]
+
+export const about5 = [
+    {
+        status:'📳',
+        describion:'Khon Hein - 09893102188'
+    },
+    {
+        status:'📳',
+        describion:'Sai *** - 09**********'
+    },
+    {
+        status:'📧',
+        describion:'khonhein.dev@gmail.com'
+    },
+]

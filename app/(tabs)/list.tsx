@@ -1,29 +1,66 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import {
   FlatList,
   Animated,
   StyleSheet,
   TextInput,
-  Image,
+  Pressable,
   View,
+  Alert,
+  ActivityIndicator,
 } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { booksList } from "@/assets/data/books";
 import BookItem from "@/components/ui/BookItem";
 import { ThemedView } from "@/components/ThemedView";
 import { ThemedText } from "@/components/ThemedText";
-import { useColorScheme } from "@/hooks/useColorScheme.web";
+import { useColorScheme } from "@/hooks/useColorScheme";
 import RotateLogo from "@/components/RotateLogo";
+import { postApiUrl, postsList } from "@/assets/data/books";
+import { PostType } from "@/types";
+
+const API_URL = postApiUrl; // Replace with your API endpoint
 
 const Books = () => {
   const [searchQuery, setSearchQuery] = useState("");
+  const [list, setBooksList] = useState<PostType[]>(postsList); // Initialize with default books
+  const [loading, setLoading] = useState(false);
   const theme = useColorScheme() ?? "light";
 
-  const filteredItems = booksList
+  // Load stored books list on app start
+  useEffect(() => {
+    const loadBooks = async () => {
+      const storedData = await AsyncStorage.getItem("booksList");
+      if (storedData) {
+        setBooksList(JSON.parse(storedData));
+      }
+    };
+    loadBooks();
+  }, []);
+
+  // Fetch data from the API and update the list
+  const fetchBooks = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch(API_URL);
+      const data = await response.json();
+      await AsyncStorage.setItem("booksList", JSON.stringify(data)); // Save updated data to storage
+      setBooksList(data); // Replace the current list
+      Alert.alert("Success", "Books list updated successfully!");
+    } catch (error) {
+      Alert.alert("Error", "Failed to fetch books data.");
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Filter and sort items based on search query
+  const filteredItems = list
     .filter((item) =>
       item.title.toLowerCase().includes(searchQuery.toLowerCase())
     )
-    .sort((a, b) => b.id - a.id);
+    .sort((a, b) => Number(b.id) - Number(a.id));
 
   // Animation state
   const animations = filteredItems.map(() => new Animated.Value(0));
@@ -42,7 +79,7 @@ const Books = () => {
     ).start();
   }, [filteredItems]);
 
-  const renderItem = ({ item, index }: { item: any; index: number }) => {
+  const renderItem = ({ item, index }: { item: PostType; index: number }) => {
     const translateY = animations[index].interpolate({
       inputRange: [0, 1],
       outputRange: [20, 0], // Slide up effect
@@ -66,8 +103,8 @@ const Books = () => {
     <SafeAreaView style={styles.container}>
       {/* Header */}
       <ThemedView style={styles.headerContainer}>
-        <View style={{width:120, height:120}}>
-        <RotateLogo/>
+        <View style={{ width: 120, height: 120 }}>
+          <RotateLogo />
         </View>
         <View style={styles.titleContainer}>
           <ThemedText style={styles.titleText}>ꩫမ်ႍၷႂၫမ်းတႆးꩫꧥင်း</ThemedText>
@@ -77,12 +114,31 @@ const Books = () => {
                 styles.search,
                 { backgroundColor: theme === "light" ? "white" : "gray" },
               ]}
-              placeholder={`🔎 ${booksList.length} items`}
+              placeholder={`🔎 ${list.length} items`}
               value={searchQuery}
               onChangeText={(text) => setSearchQuery(text)}
             />
           </ThemedView>
         </View>
+
+        {/* Smarter Button */}
+        <Pressable
+          onPress={fetchBooks}
+          disabled={loading}
+          style={({ pressed }) => [
+            styles.updateButton,
+            pressed && styles.pressedButton,
+            loading && styles.disabledButton,
+          ]}
+        >
+          {loading ? (
+            <ActivityIndicator size="small" color="#fff" />
+          ) : (
+            <ThemedText style={styles.buttonText}>
+              Update
+            </ThemedText>
+          )}
+        </Pressable>
       </ThemedView>
 
       {/* FlatList */}
@@ -114,7 +170,6 @@ const styles = StyleSheet.create({
     borderBottomColor: "gray",
     borderWidth: 0.2,
   },
-
   titleContainer: {
     paddingHorizontal: 10,
     paddingBottom: 2,
@@ -143,6 +198,33 @@ const styles = StyleSheet.create({
     color: "black",
     height: "100%",
     borderRadius: 5,
+  },
+  updateButton: {
+    marginTop: 3,
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 25,
+    backgroundColor: "#007AFF",
+    shadowColor: "#000",
+    shadowOpacity: 0.3,
+    shadowOffset: { width: 0, height: 3 },
+    shadowRadius: 5,
+    elevation: 5,
+    alignItems: "center",
+    justifyContent: "center",
+    width: 200,
+  },
+  pressedButton: {
+    transform: [{ scale: 0.98 }],
+    backgroundColor: "#005BBB",
+  },
+  disabledButton: {
+    backgroundColor: "#B0C4DE",
+  },
+  buttonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "600",
   },
   listContainer: {
     padding: 5,

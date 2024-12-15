@@ -1,5 +1,13 @@
-import { StyleSheet, TextInput, FlatList, View, Animated } from "react-native";
-import { useState, useRef } from "react";
+import {
+  StyleSheet,
+  TextInput,
+  FlatList,
+  View,
+  Animated,
+  TouchableOpacity,
+  Alert,
+} from "react-native";
+import { useState, useRef, useEffect } from "react";
 import { ThemedText } from "@/components/ThemedText";
 import { vocabs, vocabType } from "@/assets/data";
 import Item from "@/components/ui/Item";
@@ -8,27 +16,56 @@ import { ThemedView } from "@/components/ThemedView";
 import { useColorScheme } from "@/hooks/useColorScheme.web";
 import NotFoundItem from "@/components/ui/NotFoundItem";
 import RotateLogo from "@/components/RotateLogo";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { MaterialIcons } from "@expo/vector-icons";
 
 export default function HomeScreen() {
   const theme = useColorScheme() ?? "light";
   const [items, setItems] = useState<vocabType[]>(vocabs);
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Filter items based on the search query
+  useEffect(() => {
+    const loadItems = async () => {
+      const storedItems = await AsyncStorage.getItem("vocabs");
+      if (storedItems) {
+        setItems(JSON.parse(storedItems));
+      }
+    };
 
-  const filteredItems = items.filter((item: vocabType) =>
-    item.tai.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    item.myan.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    item.eng.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    item.description.toLowerCase().includes(searchQuery.toLowerCase())
+    loadItems();
+  }, []);
+
+  const filteredItems = items.filter(
+    (item: vocabType) =>
+      item.tai.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.myan.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.eng.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.description.toLowerCase().includes(searchQuery.toLowerCase())
   );
-  const renderItem = (item:vocabType) => <AnimatedItem item={item} />;
+
+  const handleUpdateItems = async () => {
+    try {
+      const response = await fetch("https://info.shannivocab.com/api/vocabs"); // Replace with your API URL
+      const newItems: vocabType[] = await response.json();
+
+      setItems(newItems);
+      await AsyncStorage.setItem("vocabs", JSON.stringify(newItems));
+      Alert.alert("Update Successful", "The vocabulary list has been updated.");
+    } catch (error) {
+      Alert.alert(
+        "Update Failed",
+        "Failed to fetch new items from the server."
+      );
+    }
+  };
+
+  const renderItem = (item: vocabType) => <AnimatedItem item={item} />;
 
   return (
     <SafeAreaView style={styles.container}>
       <ThemedView style={styles.headerContainer}>
-      <View style={{width:120, height:120}}>
-        <RotateLogo/>
+        <View style={{ width: 120, height: 120 }}>
+          <RotateLogo />
         </View>
         <View style={styles.titleContainer}>
           <ThemedText style={styles.titleText}>ꩫမ်ႍၷႂၫမ်းတႆးꩫꧥင်း</ThemedText>
@@ -36,25 +73,38 @@ export default function HomeScreen() {
             <TextInput
               style={[
                 styles.search,
-                { backgroundColor: theme && "gray" || "black" },
+                { backgroundColor: (theme && "gray") || "black" },
               ]}
               placeholder={`🔎 ${items.length} vocabs`}
               value={searchQuery}
               onChangeText={(text) => setSearchQuery(text)}
             />
           </ThemedView>
+          {/* Styled Button to update items */}
+          <TouchableOpacity
+            style={styles.updateButton}
+            onPress={handleUpdateItems}
+          >
+            <MaterialIcons name="cloud-download" size={24} color="black" />
+            <ThemedText> New Vocabs </ThemedText>
+            <MaterialIcons name="cloud-download" size={24} color="black" />
+          </TouchableOpacity>
         </View>
       </ThemedView>
-      {filteredItems.length>0&&<FlatList
-      style={styles.itemContainer}
-        data={filteredItems} // Data for the list
-        keyExtractor={(item) => item.id.toString()} // Use item.id as the key
-        renderItem={({ item }: { item: vocabType }) => (
-          <AnimatedItem item={item} /> // Render the AnimatedItem
-        )}
-        numColumns={3} // Two columns
-        columnWrapperStyle={styles.columnWrapper} // Adjust spacing between columns
-      /> || <NotFoundItem/>}
+      {filteredItems.length > 0 ? (
+        <FlatList
+          style={styles.itemContainer}
+          data={filteredItems} // Data for the list
+          keyExtractor={(item) => item.id.toString()} // Use item.id as the key
+          renderItem={({ item }: { item: vocabType }) => (
+            <AnimatedItem item={item} /> // Render the AnimatedItem
+          )}
+          numColumns={3} // Two columns
+          columnWrapperStyle={styles.columnWrapper} // Adjust spacing between columns
+        />
+      ) : (
+        <NotFoundItem />
+      )}
     </SafeAreaView>
   );
 }
@@ -85,7 +135,6 @@ function AnimatedItem({ item }: { item: vocabType }) {
   );
 }
 
-
 const styles = StyleSheet.create({
   container: {
     width: "100%",
@@ -106,7 +155,6 @@ const styles = StyleSheet.create({
     borderBottomColor: "gray",
     borderWidth: 0.2,
   },
-
   titleContainer: {
     paddingHorizontal: 10,
     paddingBottom: 2,
@@ -136,12 +184,34 @@ const styles = StyleSheet.create({
     height: "100%",
     borderRadius: 5,
   },
+  updateButton: {
+    marginTop: 3,
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 25,
+    backgroundColor: "#007AFF",
+    shadowColor: "#000",
+    shadowOpacity: 0.3,
+    shadowOffset: { width: 0, height: 3 },
+    shadowRadius: 5,
+    elevation: 5,
+    alignItems: "center",
+    justifyContent: "center",
+    width: 200,
+    flexDirection: "row",
+    marginHorizontal: "auto",
+  },
+  buttonText: {
+    color: "#FFFFFF", // Text color
+    fontSize: 16, // Text size
+    fontWeight: "bold", // Bold text
+  },
   itemContainer: {
     marginBottom: 10, // Add spacing between items
   },
   columnWrapper: {
     justifyContent: "space-between", // Space items evenly in a row
     marginBottom: 10,
-    flexWrap:'wrap'
+    flexWrap: "wrap",
   },
 });

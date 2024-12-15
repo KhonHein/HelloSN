@@ -3,9 +3,9 @@ import { ThemedView } from "../ThemedView";
 import { ThemedText } from "../ThemedText";
 
 import { Link } from "expo-router";
-import { BookType } from "@/types";
+import { BookType, PostType } from "@/types";
 
-const BookItem = (item:BookType) => {
+const BookItem = (item:PostType) => {
 
   return (
     

@@ -1,47 +1,88 @@
-import { booksList } from "@/assets/data/books";
-import About from "@/components/About";
-import RotateLogo from "@/components/RotateLogo";
+import React, { useEffect, useState } from "react";
+import {
+  View,
+  StyleSheet,
+  SafeAreaView,
+  Alert,
+  ScrollView,
+  ActivityIndicator,
+  ScrollViewBase,
+} from "react-native";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
+import RotateLogo from "@/components/RotateLogo";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import About from "@/components/About";
 import { useLocalSearchParams } from "expo-router";
-import { View, Text, StyleSheet, Image, SafeAreaView } from "react-native";
+import { PostType } from "@/types";
 
-export default function DetailsScreen() {
+const DetailsScreen = () => {
   const { id } = useLocalSearchParams();
+  const [book, setBook] = useState<PostType | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const book = booksList.find((item) => item.id === Number(id));
+  useEffect(() => {
+    const fetchBooks = async () => {
+      try {
+        setLoading(true);
+        const storedData = await AsyncStorage.getItem("booksList");
+        if (storedData) {
+          const books: PostType[] = JSON.parse(storedData);
+          const foundBook = books.find((item) => item.id === Number(id));
+          setBook(foundBook || null);
+        } else {
+          setBook(null);
+        }
+      } catch (error) {
+        setError("Failed to fetch book data.");
+        console.error(error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchBooks();
+  }, [id]);
 
   return (
     <SafeAreaView style={styles.container}>
-      {(book && (
-        <View>
-          <ThemedView style={styles.headerContainer}>
-            {/* Header Image */}
-            <View style={{ width: 120, height: 120 }}>
-              <RotateLogo />
-            </View>
-            {/* Title and Search */}
-            <View style={styles.titleContainer}>
-              <ThemedText style={styles.titleText}>
-                ၷႂၫမ်းꩬႃꩬꩫႃ ꧤႃꩬႃတႆးꩫꧥင်း
-              </ThemedText>
-            </View>
+      <View>
+        <ThemedView style={styles.headerContainer}>
+          {/* Header Image */}
+          <View style={styles.logoContainer}>
+            <RotateLogo />
+          </View>
+          {/* Title and Search */}
+          <View style={styles.titleContainer}>
+            <ThemedText style={styles.titleText}>
+              ၷႂၫမ်းꩬႃꩬꩫႃ ꧤႃꩬႃတႆးꩫꧥင်း
+            </ThemedText>
+          </View>
+        </ThemedView>
+        {/* Content */}
+        {loading ? (
+          <ActivityIndicator size="large" color="#0000ff" style={styles.loader} />
+        ) : error ? (
+          <ThemedView style={styles.errorContainer}>
+            <ThemedText style={styles.errorText}>{error}</ThemedText>
           </ThemedView>
-          {book && (
-            <ThemedView style={styles.contentContainer}>
-              <ThemedText style={styles.titleText}>{book.title}</ThemedText>
-              <ThemedText style={styles.contentText}>{book.content}</ThemedText>
-            </ThemedView>
-          )}
-        </View>
-      )) || <About />}
+        ) : book && (
+          <ScrollView style={styles.contentContainer}>
+            <ThemedText style={styles.bookTitle}>{book.title}</ThemedText>
+            <ThemedText style={styles.bookContent}>{book.content}</ThemedText>
+          </ScrollView>
+        ) || <ScrollView style={styles.aboutContainer}>
+            <About/>
+          </ScrollView>}
+      </View>
     </SafeAreaView>
   );
-}
+};
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1, // Takes the full height
+    flex: 1,
     width: "100%",
     height: "100%",
   },
@@ -51,21 +92,18 @@ const styles = StyleSheet.create({
     paddingVertical: 5,
     borderBottomEndRadius: 10,
     borderBottomStartRadius: 10,
-    //backgroundColor:'#0B192C',
     borderBottomColor: "gray",
     borderWidth: 0.2,
     marginVertical: 10,
   },
-  reactLogo: {
-    height: 100,
-    width: 150,
+  logoContainer: {
+    width: 120,
+    height: 120,
   },
   titleContainer: {
-    //backgroundColor: "#FFF",
     paddingHorizontal: 10,
     paddingBottom: 2,
     borderBottomWidth: 0.5,
-    // borderBottomColor: "#DDD",
     marginTop: 0,
   },
   titleText: {
@@ -74,13 +112,37 @@ const styles = StyleSheet.create({
     marginBottom: 1,
   },
   contentContainer: {
-    marginVertical: 10,
+    marginVertical: 5,
     width: "100%",
-    height: "auto",
-    padding: 5,
+    padding: 10,
   },
-  contentText: {
-    width: "100%",
-    height: "auto",
+  bookTitle: {
+    fontSize: 20,
+    fontWeight: "bold",
+    marginBottom: 10,
+    textAlign: "center",
   },
+  bookContent: {
+    fontSize: 16,
+    lineHeight: 24,
+    textAlign: "justify",
+  },
+  loader: {
+    marginTop: 50,
+  },
+  errorContainer: {
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 50,
+  },
+  errorText: {
+    color: "red",
+    fontSize: 16,
+  },
+  aboutContainer:{
+    height:600,
+    overflow:'scroll'
+  }
 });
+
+export default DetailsScreen;

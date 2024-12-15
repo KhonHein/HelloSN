@@ -1,12 +1,9 @@
-import { Image, StyleSheet, Text, View } from "react-native";
-import React from "react";
-import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
+import { Image, StyleSheet, View } from "react-native";
 import { ThemedText } from "./ThemedText";
 import ParallaxScrollView from "./ParallaxScrollView";
-import { Ionicons } from "@expo/vector-icons";
 import { ThemedView } from "./ThemedView";
 import { Collapsible } from "./Collapsible";
-import { about1, about2, about3, about4, aboutIntroduction } from "@/assets/data/about";
+import { about1, about2, about3, about4, about5, aboutIntroduction } from "@/assets/data/about";
 
 const About = () => {
   return (
@@ -22,7 +19,7 @@ const About = () => {
       }
     >
       <ThemedView style={styles.titleContainer}>
-        <ThemedText>Mini Pocket Shan Ni Vocabularies</ThemedText>
+        <ThemedText>Shan Ni Vocabularies</ThemedText>
         <ThemedText>@ Mauk Khon Hein</ThemedText>
       </ThemedView>
       <ThemedText>{aboutIntroduction}</ThemedText>
@@ -47,6 +44,14 @@ const About = () => {
       <Collapsible title="About Finance 💰">
         {about3 &&
           about3.map((item, index) => (
+            <ThemedText key={index}>
+              {item.status + ". " + item.describion}
+            </ThemedText>
+          ))}
+      </Collapsible>
+      <Collapsible title="Contact">
+        {about5 &&
+          about5.map((item, index) => (
             <ThemedText key={index}>
               {item.status + ". " + item.describion}
             </ThemedText>

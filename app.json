@@ -15,7 +15,8 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.khonhein.helloshanni"
     },
     "web": {
       "bundler": "metro",
@@ -36,12 +37,23 @@
       [
         "expo-font",
         {
-          "ShanNi01": ["./assets/fonts/ShanNi01 & English.ttf"]
+          "ShanNi01": [
+            "./assets/fonts/ShanNi01 & English.ttf"
+          ]
         }
       ]
     ],
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "d3bc656e-a2e6-44c2-be98-bfcf8099cd8d"
+      }
+    },
+    "owner": "khonhein"
   }
 }

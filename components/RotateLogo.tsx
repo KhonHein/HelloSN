@@ -59,7 +59,7 @@ const styles = StyleSheet.create({
     height: 120,
     borderRadius: 60,
     borderWidth: 5,
-    borderColor: "transparent",
+    borderColor: "",
     borderStyle: "solid",
     position: "absolute",
     borderTopColor: "#125B50",
@@ -77,7 +77,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   reactLogo: {
-    width: "100%",
-    height: "100%",
+    width: "95%",
+    height: "95%",
   },
 });
